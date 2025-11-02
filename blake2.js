@@ -1,13 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.blake2s = exports.BLAKE2s = exports.blake2b = exports.BLAKE2b = exports.BLAKE2 = void 0;
+exports.compress = compress;
 /**
  * blake2b (64-bit) & blake2s (8 to 32-bit) hash functions.
  * b could have been faster, but there is no fast u64 in js, so s is 1.5x faster.
  * @module
  */
-import { BSIGMA, G1s, G2s } from "./_blake.js";
-import { SHA256_IV } from "./_md.js";
-import * as u64 from "./_u64.js";
+const _blake_ts_1 = require("./_blake.js");
+const _md_ts_1 = require("./_md.js");
+const u64 = require("./_u64.js");
 // prettier-ignore
-import { abytes, aexists, anumber, aoutput, clean, createOptHasher, Hash, swap32IfBE, swap8IfBE, toBytes, u32 } from "./utils.js";
+const utils_ts_1 = require("./utils.js");
 // Same as SHA512_IV, but swapped endianness: LE instead of BE. iv[1] is iv[0], etc.
 const B2B_IV = /* @__PURE__ */ Uint32Array.from([
     0xf3bcc908, 0x6a09e667, 0x84caa73b, 0xbb67ae85, 0xfe94f82b, 0x3c6ef372, 0x5f1d36f1, 0xa54ff53a,
@@ -65,7 +69,7 @@ function G2b(a, b, c, d, msg, x) {
     (BBUF[2 * d] = Dl), (BBUF[2 * d + 1] = Dh);
 }
 function checkBlake2Opts(outputLen, opts = {}, keyLen, saltLen, persLen) {
-    anumber(keyLen);
+    (0, utils_ts_1.anumber)(keyLen);
     if (outputLen < 0 || outputLen > keyLen)
         throw new Error('outputLen bigger than keyLen');
     const { key, salt, personalization } = opts;
@@ -77,24 +81,24 @@ function checkBlake2Opts(outputLen, opts = {}, keyLen, saltLen, persLen) {
         throw new Error('personalization must be undefined or ' + persLen);
 }
 /** Class, from which others are subclassed. */
-export class BLAKE2 extends Hash {
+class BLAKE2 extends utils_ts_1.Hash {
     constructor(blockLen, outputLen) {
         super();
         this.finished = false;
         this.destroyed = false;
         this.length = 0;
         this.pos = 0;
-        anumber(blockLen);
-        anumber(outputLen);
+        (0, utils_ts_1.anumber)(blockLen);
+        (0, utils_ts_1.anumber)(outputLen);
         this.blockLen = blockLen;
         this.outputLen = outputLen;
         this.buffer = new Uint8Array(blockLen);
-        this.buffer32 = u32(this.buffer);
+        this.buffer32 = (0, utils_ts_1.u32)(this.buffer);
     }
     update(data) {
-        aexists(this);
-        data = toBytes(data);
-        abytes(data);
+        (0, utils_ts_1.aexists)(this);
+        data = (0, utils_ts_1.toBytes)(data);
+        (0, utils_ts_1.abytes)(data);
         // Main difference with other hashes: there is flag for last block,
         // so we cannot process current block before we know that there
         // is the next one. This significantly complicates logic and reduces ability
@@ -106,9 +110,9 @@ export class BLAKE2 extends Hash {
         for (let pos = 0; pos < len;) {
             // If buffer is full and we still have input (don't process last block, same as blake2s)
             if (this.pos === blockLen) {
-                swap32IfBE(buffer32);
+                (0, utils_ts_1.swap32IfBE)(buffer32);
                 this.compress(buffer32, 0, false);
-                swap32IfBE(buffer32);
+                (0, utils_ts_1.swap32IfBE)(buffer32);
                 this.pos = 0;
             }
             const take = Math.min(blockLen - this.pos, len - pos);
@@ -116,12 +120,12 @@ export class BLAKE2 extends Hash {
             // full block && aligned to 4 bytes && not last in input
             if (take === blockLen && !(dataOffset % 4) && pos + take < len) {
                 const data32 = new Uint32Array(buf, dataOffset, Math.floor((len - pos) / 4));
-                swap32IfBE(data32);
+                (0, utils_ts_1.swap32IfBE)(data32);
                 for (let pos32 = 0; pos + blockLen < len; pos32 += buffer32.length, pos += blockLen) {
                     this.length += blockLen;
                     this.compress(data32, pos32, false);
                 }
-                swap32IfBE(data32);
+                (0, utils_ts_1.swap32IfBE)(data32);
                 continue;
             }
             buffer.set(data.subarray(pos, pos + take), this.pos);
@@ -132,17 +136,17 @@ export class BLAKE2 extends Hash {
         return this;
     }
     digestInto(out) {
-        aexists(this);
-        aoutput(out, this);
+        (0, utils_ts_1.aexists)(this);
+        (0, utils_ts_1.aoutput)(out, this);
         const { pos, buffer32 } = this;
         this.finished = true;
         // Padding
-        clean(this.buffer.subarray(pos));
-        swap32IfBE(buffer32);
+        (0, utils_ts_1.clean)(this.buffer.subarray(pos));
+        (0, utils_ts_1.swap32IfBE)(buffer32);
         this.compress(buffer32, 0, true);
-        swap32IfBE(buffer32);
-        const out32 = u32(out);
-        this.get().forEach((v, i) => (out32[i] = swap8IfBE(v)));
+        (0, utils_ts_1.swap32IfBE)(buffer32);
+        const out32 = (0, utils_ts_1.u32)(out);
+        this.get().forEach((v, i) => (out32[i] = (0, utils_ts_1.swap8IfBE)(v)));
     }
     digest() {
         const { buffer, outputLen } = this;
@@ -168,7 +172,8 @@ export class BLAKE2 extends Hash {
         return this._cloneInto();
     }
 }
-export class BLAKE2b extends BLAKE2 {
+exports.BLAKE2 = BLAKE2;
+class BLAKE2b extends BLAKE2 {
     constructor(opts = {}) {
         const olen = opts.dkLen === undefined ? 64 : opts.dkLen;
         super(128, olen);
@@ -193,25 +198,25 @@ export class BLAKE2b extends BLAKE2 {
         let { key, personalization, salt } = opts;
         let keyLength = 0;
         if (key !== undefined) {
-            key = toBytes(key);
+            key = (0, utils_ts_1.toBytes)(key);
             keyLength = key.length;
         }
         this.v0l ^= this.outputLen | (keyLength << 8) | (0x01 << 16) | (0x01 << 24);
         if (salt !== undefined) {
-            salt = toBytes(salt);
-            const slt = u32(salt);
-            this.v4l ^= swap8IfBE(slt[0]);
-            this.v4h ^= swap8IfBE(slt[1]);
-            this.v5l ^= swap8IfBE(slt[2]);
-            this.v5h ^= swap8IfBE(slt[3]);
+            salt = (0, utils_ts_1.toBytes)(salt);
+            const slt = (0, utils_ts_1.u32)(salt);
+            this.v4l ^= (0, utils_ts_1.swap8IfBE)(slt[0]);
+            this.v4h ^= (0, utils_ts_1.swap8IfBE)(slt[1]);
+            this.v5l ^= (0, utils_ts_1.swap8IfBE)(slt[2]);
+            this.v5h ^= (0, utils_ts_1.swap8IfBE)(slt[3]);
         }
         if (personalization !== undefined) {
-            personalization = toBytes(personalization);
-            const pers = u32(personalization);
-            this.v6l ^= swap8IfBE(pers[0]);
-            this.v6h ^= swap8IfBE(pers[1]);
-            this.v7l ^= swap8IfBE(pers[2]);
-            this.v7h ^= swap8IfBE(pers[3]);
+            personalization = (0, utils_ts_1.toBytes)(personalization);
+            const pers = (0, utils_ts_1.u32)(personalization);
+            this.v6l ^= (0, utils_ts_1.swap8IfBE)(pers[0]);
+            this.v6h ^= (0, utils_ts_1.swap8IfBE)(pers[1]);
+            this.v7l ^= (0, utils_ts_1.swap8IfBE)(pers[2]);
+            this.v7h ^= (0, utils_ts_1.swap8IfBE)(pers[3]);
         }
         if (key !== undefined) {
             // Pad to blockLen and update
@@ -256,7 +261,7 @@ export class BLAKE2b extends BLAKE2 {
             BBUF[29] = ~BBUF[29];
         }
         let j = 0;
-        const s = BSIGMA;
+        const s = _blake_ts_1.BSIGMA;
         for (let i = 0; i < 12; i++) {
             G1b(0, 4, 8, 12, msg, offset + 2 * s[j++]);
             G2b(0, 4, 8, 12, msg, offset + 2 * s[j++]);
@@ -291,45 +296,46 @@ export class BLAKE2b extends BLAKE2 {
         this.v6h ^= BBUF[13] ^ BBUF[29];
         this.v7l ^= BBUF[14] ^ BBUF[30];
         this.v7h ^= BBUF[15] ^ BBUF[31];
-        clean(BBUF);
+        (0, utils_ts_1.clean)(BBUF);
     }
     destroy() {
         this.destroyed = true;
-        clean(this.buffer32);
+        (0, utils_ts_1.clean)(this.buffer32);
         this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 }
+exports.BLAKE2b = BLAKE2b;
 /**
  * Blake2b hash function. 64-bit. 1.5x slower than blake2s in JS.
  * @param msg - message that would be hashed
  * @param opts - dkLen output length, key for MAC mode, salt, personalization
  */
-export const blake2b = /* @__PURE__ */ createOptHasher((opts) => new BLAKE2b(opts));
+exports.blake2b = (0, utils_ts_1.createOptHasher)((opts) => new BLAKE2b(opts));
 // prettier-ignore
-export function compress(s, offset, msg, rounds, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15) {
+function compress(s, offset, msg, rounds, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15) {
     let j = 0;
     for (let i = 0; i < rounds; i++) {
-        ({ a: v0, b: v4, c: v8, d: v12 } = G1s(v0, v4, v8, v12, msg[offset + s[j++]]));
-        ({ a: v0, b: v4, c: v8, d: v12 } = G2s(v0, v4, v8, v12, msg[offset + s[j++]]));
-        ({ a: v1, b: v5, c: v9, d: v13 } = G1s(v1, v5, v9, v13, msg[offset + s[j++]]));
-        ({ a: v1, b: v5, c: v9, d: v13 } = G2s(v1, v5, v9, v13, msg[offset + s[j++]]));
-        ({ a: v2, b: v6, c: v10, d: v14 } = G1s(v2, v6, v10, v14, msg[offset + s[j++]]));
-        ({ a: v2, b: v6, c: v10, d: v14 } = G2s(v2, v6, v10, v14, msg[offset + s[j++]]));
-        ({ a: v3, b: v7, c: v11, d: v15 } = G1s(v3, v7, v11, v15, msg[offset + s[j++]]));
-        ({ a: v3, b: v7, c: v11, d: v15 } = G2s(v3, v7, v11, v15, msg[offset + s[j++]]));
-        ({ a: v0, b: v5, c: v10, d: v15 } = G1s(v0, v5, v10, v15, msg[offset + s[j++]]));
-        ({ a: v0, b: v5, c: v10, d: v15 } = G2s(v0, v5, v10, v15, msg[offset + s[j++]]));
-        ({ a: v1, b: v6, c: v11, d: v12 } = G1s(v1, v6, v11, v12, msg[offset + s[j++]]));
-        ({ a: v1, b: v6, c: v11, d: v12 } = G2s(v1, v6, v11, v12, msg[offset + s[j++]]));
-        ({ a: v2, b: v7, c: v8, d: v13 } = G1s(v2, v7, v8, v13, msg[offset + s[j++]]));
-        ({ a: v2, b: v7, c: v8, d: v13 } = G2s(v2, v7, v8, v13, msg[offset + s[j++]]));
-        ({ a: v3, b: v4, c: v9, d: v14 } = G1s(v3, v4, v9, v14, msg[offset + s[j++]]));
-        ({ a: v3, b: v4, c: v9, d: v14 } = G2s(v3, v4, v9, v14, msg[offset + s[j++]]));
+        ({ a: v0, b: v4, c: v8, d: v12 } = (0, _blake_ts_1.G1s)(v0, v4, v8, v12, msg[offset + s[j++]]));
+        ({ a: v0, b: v4, c: v8, d: v12 } = (0, _blake_ts_1.G2s)(v0, v4, v8, v12, msg[offset + s[j++]]));
+        ({ a: v1, b: v5, c: v9, d: v13 } = (0, _blake_ts_1.G1s)(v1, v5, v9, v13, msg[offset + s[j++]]));
+        ({ a: v1, b: v5, c: v9, d: v13 } = (0, _blake_ts_1.G2s)(v1, v5, v9, v13, msg[offset + s[j++]]));
+        ({ a: v2, b: v6, c: v10, d: v14 } = (0, _blake_ts_1.G1s)(v2, v6, v10, v14, msg[offset + s[j++]]));
+        ({ a: v2, b: v6, c: v10, d: v14 } = (0, _blake_ts_1.G2s)(v2, v6, v10, v14, msg[offset + s[j++]]));
+        ({ a: v3, b: v7, c: v11, d: v15 } = (0, _blake_ts_1.G1s)(v3, v7, v11, v15, msg[offset + s[j++]]));
+        ({ a: v3, b: v7, c: v11, d: v15 } = (0, _blake_ts_1.G2s)(v3, v7, v11, v15, msg[offset + s[j++]]));
+        ({ a: v0, b: v5, c: v10, d: v15 } = (0, _blake_ts_1.G1s)(v0, v5, v10, v15, msg[offset + s[j++]]));
+        ({ a: v0, b: v5, c: v10, d: v15 } = (0, _blake_ts_1.G2s)(v0, v5, v10, v15, msg[offset + s[j++]]));
+        ({ a: v1, b: v6, c: v11, d: v12 } = (0, _blake_ts_1.G1s)(v1, v6, v11, v12, msg[offset + s[j++]]));
+        ({ a: v1, b: v6, c: v11, d: v12 } = (0, _blake_ts_1.G2s)(v1, v6, v11, v12, msg[offset + s[j++]]));
+        ({ a: v2, b: v7, c: v8, d: v13 } = (0, _blake_ts_1.G1s)(v2, v7, v8, v13, msg[offset + s[j++]]));
+        ({ a: v2, b: v7, c: v8, d: v13 } = (0, _blake_ts_1.G2s)(v2, v7, v8, v13, msg[offset + s[j++]]));
+        ({ a: v3, b: v4, c: v9, d: v14 } = (0, _blake_ts_1.G1s)(v3, v4, v9, v14, msg[offset + s[j++]]));
+        ({ a: v3, b: v4, c: v9, d: v14 } = (0, _blake_ts_1.G2s)(v3, v4, v9, v14, msg[offset + s[j++]]));
     }
     return { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 };
 }
-const B2S_IV = SHA256_IV;
-export class BLAKE2s extends BLAKE2 {
+const B2S_IV = _md_ts_1.SHA256_IV;
+class BLAKE2s extends BLAKE2 {
     constructor(opts = {}) {
         const olen = opts.dkLen === undefined ? 32 : opts.dkLen;
         super(64, olen);
@@ -346,25 +352,25 @@ export class BLAKE2s extends BLAKE2 {
         let { key, personalization, salt } = opts;
         let keyLength = 0;
         if (key !== undefined) {
-            key = toBytes(key);
+            key = (0, utils_ts_1.toBytes)(key);
             keyLength = key.length;
         }
         this.v0 ^= this.outputLen | (keyLength << 8) | (0x01 << 16) | (0x01 << 24);
         if (salt !== undefined) {
-            salt = toBytes(salt);
-            const slt = u32(salt);
-            this.v4 ^= swap8IfBE(slt[0]);
-            this.v5 ^= swap8IfBE(slt[1]);
+            salt = (0, utils_ts_1.toBytes)(salt);
+            const slt = (0, utils_ts_1.u32)(salt);
+            this.v4 ^= (0, utils_ts_1.swap8IfBE)(slt[0]);
+            this.v5 ^= (0, utils_ts_1.swap8IfBE)(slt[1]);
         }
         if (personalization !== undefined) {
-            personalization = toBytes(personalization);
-            const pers = u32(personalization);
-            this.v6 ^= swap8IfBE(pers[0]);
-            this.v7 ^= swap8IfBE(pers[1]);
+            personalization = (0, utils_ts_1.toBytes)(personalization);
+            const pers = (0, utils_ts_1.u32)(personalization);
+            this.v6 ^= (0, utils_ts_1.swap8IfBE)(pers[0]);
+            this.v7 ^= (0, utils_ts_1.swap8IfBE)(pers[1]);
         }
         if (key !== undefined) {
             // Pad to blockLen and update
-            abytes(key);
+            (0, utils_ts_1.abytes)(key);
             const tmp = new Uint8Array(this.blockLen);
             tmp.set(key);
             this.update(tmp);
@@ -388,7 +394,7 @@ export class BLAKE2s extends BLAKE2 {
     compress(msg, offset, isLast) {
         const { h, l } = u64.fromBig(BigInt(this.length));
         // prettier-ignore
-        const { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 } = compress(BSIGMA, offset, msg, 10, this.v0, this.v1, this.v2, this.v3, this.v4, this.v5, this.v6, this.v7, B2S_IV[0], B2S_IV[1], B2S_IV[2], B2S_IV[3], l ^ B2S_IV[4], h ^ B2S_IV[5], isLast ? ~B2S_IV[6] : B2S_IV[6], B2S_IV[7]);
+        const { v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 } = compress(_blake_ts_1.BSIGMA, offset, msg, 10, this.v0, this.v1, this.v2, this.v3, this.v4, this.v5, this.v6, this.v7, B2S_IV[0], B2S_IV[1], B2S_IV[2], B2S_IV[3], l ^ B2S_IV[4], h ^ B2S_IV[5], isLast ? ~B2S_IV[6] : B2S_IV[6], B2S_IV[7]);
         this.v0 ^= v0 ^ v8;
         this.v1 ^= v1 ^ v9;
         this.v2 ^= v2 ^ v10;
@@ -400,14 +406,15 @@ export class BLAKE2s extends BLAKE2 {
     }
     destroy() {
         this.destroyed = true;
-        clean(this.buffer32);
+        (0, utils_ts_1.clean)(this.buffer32);
         this.set(0, 0, 0, 0, 0, 0, 0, 0);
     }
 }
+exports.BLAKE2s = BLAKE2s;
 /**
  * Blake2s hash function. Focuses on 8-bit to 32-bit platforms. 1.5x faster than blake2b in JS.
  * @param msg - message that would be hashed
  * @param opts - dkLen output length, key for MAC mode, salt, personalization
  */
-export const blake2s = /* @__PURE__ */ createOptHasher((opts) => new BLAKE2s(opts));
+exports.blake2s = (0, utils_ts_1.createOptHasher)((opts) => new BLAKE2s(opts));
 //# sourceMappingURL=blake2.js.map

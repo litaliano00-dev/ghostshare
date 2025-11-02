@@ -1,15 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.hmac = exports.HMAC = void 0;
 /**
  * HMAC: RFC2104 message authentication code.
  * @module
  */
-import { abytes, aexists, ahash, clean, Hash, toBytes } from "./utils.js";
-export class HMAC extends Hash {
+const utils_ts_1 = require("./utils.js");
+class HMAC extends utils_ts_1.Hash {
     constructor(hash, _key) {
         super();
         this.finished = false;
         this.destroyed = false;
-        ahash(hash);
-        const key = toBytes(_key);
+        (0, utils_ts_1.ahash)(hash);
+        const key = (0, utils_ts_1.toBytes)(_key);
         this.iHash = hash.create();
         if (typeof this.iHash.update !== 'function')
             throw new Error('Expected instance of class which extends utils.Hash');
@@ -28,16 +31,16 @@ export class HMAC extends Hash {
         for (let i = 0; i < pad.length; i++)
             pad[i] ^= 0x36 ^ 0x5c;
         this.oHash.update(pad);
-        clean(pad);
+        (0, utils_ts_1.clean)(pad);
     }
     update(buf) {
-        aexists(this);
+        (0, utils_ts_1.aexists)(this);
         this.iHash.update(buf);
         return this;
     }
     digestInto(out) {
-        aexists(this);
-        abytes(out, this.outputLen);
+        (0, utils_ts_1.aexists)(this);
+        (0, utils_ts_1.abytes)(out, this.outputLen);
         this.finished = true;
         this.iHash.digestInto(out);
         this.oHash.update(out);
@@ -71,6 +74,7 @@ export class HMAC extends Hash {
         this.iHash.destroy();
     }
 }
+exports.HMAC = HMAC;
 /**
  * HMAC: RFC2104 message authentication code.
  * @param hash - function that would be used e.g. sha256
@@ -81,6 +85,7 @@ export class HMAC extends Hash {
  * import { sha256 } from '@noble/hashes/sha2';
  * const mac1 = hmac(sha256, 'key', 'message');
  */
-export const hmac = (hash, key, message) => new HMAC(hash, key).update(message).digest();
-hmac.create = (hash, key) => new HMAC(hash, key);
+const hmac = (hash, key, message) => new HMAC(hash, key).update(message).digest();
+exports.hmac = hmac;
+exports.hmac.create = (hash, key) => new HMAC(hash, key);
 //# sourceMappingURL=hmac.js.map

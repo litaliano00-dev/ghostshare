@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ripemd160 = exports.RIPEMD160 = exports.md5 = exports.MD5 = exports.sha1 = exports.SHA1 = void 0;
 /**
 
 SHA1 (RFC 3174), MD5 (RFC 1321) and RIPEMD160 (RFC 2286) legacy, weak hash functions.
@@ -8,8 +11,8 @@ Don't use them in a new protocol. What "weak" means:
 - HMAC seems kinda ok: https://datatracker.ietf.org/doc/html/rfc6151
  * @module
  */
-import { Chi, HashMD, Maj } from "./_md.js";
-import { clean, createHasher, rotl } from "./utils.js";
+const _md_ts_1 = require("./_md.js");
+const utils_ts_1 = require("./utils.js");
 /** Initial SHA1 state */
 const SHA1_IV = /* @__PURE__ */ Uint32Array.from([
     0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0,
@@ -17,7 +20,7 @@ const SHA1_IV = /* @__PURE__ */ Uint32Array.from([
 // Reusable temporary buffer
 const SHA1_W = /* @__PURE__ */ new Uint32Array(80);
 /** SHA1 legacy hash class. */
-export class SHA1 extends HashMD {
+class SHA1 extends _md_ts_1.HashMD {
     constructor() {
         super(64, 20, 8, false);
         this.A = SHA1_IV[0] | 0;
@@ -41,13 +44,13 @@ export class SHA1 extends HashMD {
         for (let i = 0; i < 16; i++, offset += 4)
             SHA1_W[i] = view.getUint32(offset, false);
         for (let i = 16; i < 80; i++)
-            SHA1_W[i] = rotl(SHA1_W[i - 3] ^ SHA1_W[i - 8] ^ SHA1_W[i - 14] ^ SHA1_W[i - 16], 1);
+            SHA1_W[i] = (0, utils_ts_1.rotl)(SHA1_W[i - 3] ^ SHA1_W[i - 8] ^ SHA1_W[i - 14] ^ SHA1_W[i - 16], 1);
         // Compression function main loop, 80 rounds
         let { A, B, C, D, E } = this;
         for (let i = 0; i < 80; i++) {
             let F, K;
             if (i < 20) {
-                F = Chi(B, C, D);
+                F = (0, _md_ts_1.Chi)(B, C, D);
                 K = 0x5a827999;
             }
             else if (i < 40) {
@@ -55,17 +58,17 @@ export class SHA1 extends HashMD {
                 K = 0x6ed9eba1;
             }
             else if (i < 60) {
-                F = Maj(B, C, D);
+                F = (0, _md_ts_1.Maj)(B, C, D);
                 K = 0x8f1bbcdc;
             }
             else {
                 F = B ^ C ^ D;
                 K = 0xca62c1d6;
             }
-            const T = (rotl(A, 5) + F + E + K + SHA1_W[i]) | 0;
+            const T = ((0, utils_ts_1.rotl)(A, 5) + F + E + K + SHA1_W[i]) | 0;
             E = D;
             D = C;
-            C = rotl(B, 30);
+            C = (0, utils_ts_1.rotl)(B, 30);
             B = A;
             A = T;
         }
@@ -78,15 +81,16 @@ export class SHA1 extends HashMD {
         this.set(A, B, C, D, E);
     }
     roundClean() {
-        clean(SHA1_W);
+        (0, utils_ts_1.clean)(SHA1_W);
     }
     destroy() {
         this.set(0, 0, 0, 0, 0);
-        clean(this.buffer);
+        (0, utils_ts_1.clean)(this.buffer);
     }
 }
+exports.SHA1 = SHA1;
 /** SHA1 (RFC 3174) legacy hash function. It was cryptographically broken. */
-export const sha1 = /* @__PURE__ */ createHasher(() => new SHA1());
+exports.sha1 = (0, utils_ts_1.createHasher)(() => new SHA1());
 /** Per-round constants */
 const p32 = /* @__PURE__ */ Math.pow(2, 32);
 const K = /* @__PURE__ */ Array.from({ length: 64 }, (_, i) => Math.floor(p32 * Math.abs(Math.sin(i + 1))));
@@ -95,7 +99,7 @@ const MD5_IV = /* @__PURE__ */ SHA1_IV.slice(0, 4);
 // Reusable temporary buffer
 const MD5_W = /* @__PURE__ */ new Uint32Array(16);
 /** MD5 legacy hash class. */
-export class MD5 extends HashMD {
+class MD5 extends _md_ts_1.HashMD {
     constructor() {
         super(64, 16, 8, true);
         this.A = MD5_IV[0] | 0;
@@ -121,12 +125,12 @@ export class MD5 extends HashMD {
         for (let i = 0; i < 64; i++) {
             let F, g, s;
             if (i < 16) {
-                F = Chi(B, C, D);
+                F = (0, _md_ts_1.Chi)(B, C, D);
                 g = i;
                 s = [7, 12, 17, 22];
             }
             else if (i < 32) {
-                F = Chi(D, B, C);
+                F = (0, _md_ts_1.Chi)(D, B, C);
                 g = (5 * i + 1) % 16;
                 s = [5, 9, 14, 20];
             }
@@ -144,7 +148,7 @@ export class MD5 extends HashMD {
             A = D;
             D = C;
             C = B;
-            B = B + rotl(F, s[i % 4]);
+            B = B + (0, utils_ts_1.rotl)(F, s[i % 4]);
         }
         // Add the compressed chunk to the current hash value
         A = (A + this.A) | 0;
@@ -154,13 +158,14 @@ export class MD5 extends HashMD {
         this.set(A, B, C, D);
     }
     roundClean() {
-        clean(MD5_W);
+        (0, utils_ts_1.clean)(MD5_W);
     }
     destroy() {
         this.set(0, 0, 0, 0);
-        clean(this.buffer);
+        (0, utils_ts_1.clean)(this.buffer);
     }
 }
+exports.MD5 = MD5;
 /**
  * MD5 (RFC 1321) legacy hash function. It was cryptographically broken.
  * MD5 architecture is similar to SHA1, with some differences:
@@ -170,7 +175,7 @@ export class MD5 extends HashMD {
  * - Non-linear index selection: huge speed-up for unroll
  * - Per round constants: more memory accesses, additional speed-up for unroll
  */
-export const md5 = /* @__PURE__ */ createHasher(() => new MD5());
+exports.md5 = (0, utils_ts_1.createHasher)(() => new MD5());
 // RIPEMD-160
 const Rho160 = /* @__PURE__ */ Uint8Array.from([
     7, 4, 13, 1, 10, 6, 15, 3, 12, 0, 9, 5, 2, 14, 11, 8,
@@ -218,7 +223,7 @@ function ripemd_f(group, x, y, z) {
 }
 // Reusable temporary buffer
 const BUF_160 = /* @__PURE__ */ new Uint32Array(16);
-export class RIPEMD160 extends HashMD {
+class RIPEMD160 extends _md_ts_1.HashMD {
     constructor() {
         super(64, 20, 8, true);
         this.h0 = 0x67452301 | 0;
@@ -251,31 +256,32 @@ export class RIPEMD160 extends HashMD {
             const rl = idxL[group], rr = idxR[group]; // prettier-ignore
             const sl = shiftsL160[group], sr = shiftsR160[group]; // prettier-ignore
             for (let i = 0; i < 16; i++) {
-                const tl = (rotl(al + ripemd_f(group, bl, cl, dl) + BUF_160[rl[i]] + hbl, sl[i]) + el) | 0;
-                al = el, el = dl, dl = rotl(cl, 10) | 0, cl = bl, bl = tl; // prettier-ignore
+                const tl = ((0, utils_ts_1.rotl)(al + ripemd_f(group, bl, cl, dl) + BUF_160[rl[i]] + hbl, sl[i]) + el) | 0;
+                al = el, el = dl, dl = (0, utils_ts_1.rotl)(cl, 10) | 0, cl = bl, bl = tl; // prettier-ignore
             }
             // 2 loops are 10% faster
             for (let i = 0; i < 16; i++) {
-                const tr = (rotl(ar + ripemd_f(rGroup, br, cr, dr) + BUF_160[rr[i]] + hbr, sr[i]) + er) | 0;
-                ar = er, er = dr, dr = rotl(cr, 10) | 0, cr = br, br = tr; // prettier-ignore
+                const tr = ((0, utils_ts_1.rotl)(ar + ripemd_f(rGroup, br, cr, dr) + BUF_160[rr[i]] + hbr, sr[i]) + er) | 0;
+                ar = er, er = dr, dr = (0, utils_ts_1.rotl)(cr, 10) | 0, cr = br, br = tr; // prettier-ignore
             }
         }
         // Add the compressed chunk to the current hash value
         this.set((this.h1 + cl + dr) | 0, (this.h2 + dl + er) | 0, (this.h3 + el + ar) | 0, (this.h4 + al + br) | 0, (this.h0 + bl + cr) | 0);
     }
     roundClean() {
-        clean(BUF_160);
+        (0, utils_ts_1.clean)(BUF_160);
     }
     destroy() {
         this.destroyed = true;
-        clean(this.buffer);
+        (0, utils_ts_1.clean)(this.buffer);
         this.set(0, 0, 0, 0, 0);
     }
 }
+exports.RIPEMD160 = RIPEMD160;
 /**
  * RIPEMD-160 - a legacy hash function from 1990s.
  * * https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
  * * https://homes.esat.kuleuven.be/~bosselae/ripemd160/pdf/AB-9601/AB-9601.pdf
  */
-export const ripemd160 = /* @__PURE__ */ createHasher(() => new RIPEMD160());
+exports.ripemd160 = (0, utils_ts_1.createHasher)(() => new RIPEMD160());
 //# sourceMappingURL=legacy.js.map

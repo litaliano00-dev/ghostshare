@@ -1,15 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.aoutput = exports.anumber = exports.aexists = exports.abytes = void 0;
 /**
  * Internal assertion helpers.
  * @module
  * @deprecated
  */
-import { abytes as ab, aexists as ae, anumber as an, aoutput as ao, } from "./utils.js";
+const utils_ts_1 = require("./utils.js");
 /** @deprecated Use import from `noble/hashes/utils` module */
-export const abytes = ab;
+exports.abytes = utils_ts_1.abytes;
 /** @deprecated Use import from `noble/hashes/utils` module */
-export const aexists = ae;
+exports.aexists = utils_ts_1.aexists;
 /** @deprecated Use import from `noble/hashes/utils` module */
-export const anumber = an;
+exports.anumber = utils_ts_1.anumber;
 /** @deprecated Use import from `noble/hashes/utils` module */
-export const aoutput = ao;
+exports.aoutput = utils_ts_1.aoutput;
 //# sourceMappingURL=_assert.js.map
