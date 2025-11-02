@@ -1,0 +1,13 @@
+#Sun Nov 02 01:40:51 CET 2025
+base.0=/home/adrian/GhostShare/Backend/android/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
+base.1=/home/adrian/GhostShare/Backend/android/app/build/intermediates/dex/debug/mergeLibDexDebug/0/classes.dex
+base.2=/home/adrian/GhostShare/Backend/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
+base.3=/home/adrian/GhostShare/Backend/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/9/classes.dex
+path.0=classes.dex
+path.1=0/classes.dex
+path.2=0/classes.dex
+path.3=9/classes.dex
+renamed.0=classes.dex
+renamed.1=classes2.dex
+renamed.2=classes3.dex
+renamed.3=classes4.dex
