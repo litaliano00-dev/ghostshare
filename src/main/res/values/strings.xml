@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GhostShare</string>
+    <string name="title_activity_main">GhostShare</string>
+    <string name="package_name">com.opfts.ghostshare</string>
+    <string name="custom_url_scheme">com.opfts.ghostshare</string>
+</resources>
