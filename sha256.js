@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sha224 = exports.SHA224 = exports.sha256 = exports.SHA256 = void 0;
 /**
  * SHA2-256 a.k.a. sha256. In JS, it is the fastest hash, even faster than Blake3.
  *
@@ -8,13 +11,13 @@
  * @module
  * @deprecated
  */
-import { SHA224 as SHA224n, sha224 as sha224n, SHA256 as SHA256n, sha256 as sha256n, } from "./sha2.js";
+const sha2_ts_1 = require("./sha2.js");
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const SHA256 = SHA256n;
+exports.SHA256 = sha2_ts_1.SHA256;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const sha256 = sha256n;
+exports.sha256 = sha2_ts_1.sha256;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const SHA224 = SHA224n;
+exports.SHA224 = sha2_ts_1.SHA224;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const sha224 = sha224n;
+exports.sha224 = sha2_ts_1.sha224;
 //# sourceMappingURL=sha256.js.map

@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ripemd160 = exports.RIPEMD160 = void 0;
 /**
  * RIPEMD-160 legacy hash function.
  * https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
@@ -5,9 +8,9 @@
  * @module
  * @deprecated
  */
-import { RIPEMD160 as RIPEMD160n, ripemd160 as ripemd160n } from "./legacy.js";
+const legacy_ts_1 = require("./legacy.js");
 /** @deprecated Use import from `noble/hashes/legacy` module */
-export const RIPEMD160 = RIPEMD160n;
+exports.RIPEMD160 = legacy_ts_1.RIPEMD160;
 /** @deprecated Use import from `noble/hashes/legacy` module */
-export const ripemd160 = ripemd160n;
+exports.ripemd160 = legacy_ts_1.ripemd160;
 //# sourceMappingURL=ripemd160.js.map

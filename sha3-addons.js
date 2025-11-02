@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.keccakprg = exports.KeccakPRG = exports.m14 = exports.k12 = exports.KangarooTwelve = exports.turboshake256 = exports.turboshake128 = exports.parallelhash256xof = exports.parallelhash128xof = exports.parallelhash256 = exports.parallelhash128 = exports.ParallelHash = exports.tuplehash256xof = exports.tuplehash128xof = exports.tuplehash256 = exports.tuplehash128 = exports.TupleHash = exports.kmac256xof = exports.kmac128xof = exports.kmac256 = exports.kmac128 = exports.KMAC = exports.cshake256 = exports.cshake128 = void 0;
 /**
  * SHA3 (keccak) addons.
  *
@@ -10,8 +13,8 @@
  * * KeccakPRG: Pseudo-random generator based on Keccak [(pdf)](https://keccak.team/files/CSF-0.1.pdf)
  * @module
  */
-import { Keccak } from "./sha3.js";
-import { abytes, anumber, createOptHasher, createXOFer, Hash, toBytes, u32, } from "./utils.js";
+const sha3_ts_1 = require("./sha3.js");
+const utils_ts_1 = require("./utils.js");
 // cSHAKE && KMAC (NIST SP800-185)
 const _8n = BigInt(8);
 const _ffn = BigInt(0xff);
@@ -41,7 +44,7 @@ function chooseLen(opts, outputLen) {
 const abytesOrZero = (buf) => {
     if (buf === undefined)
         return Uint8Array.of();
-    return toBytes(buf);
+    return (0, utils_ts_1.toBytes)(buf);
 };
 // NOTE: second modulo is necessary since we don't need to add padding if current element takes whole block
 const getPadding = (len, block) => new Uint8Array((block - (len % block)) % block);
@@ -64,15 +67,15 @@ function cshakePers(hash, opts = {}) {
     hash.update(getPadding(totalLen, hash.blockLen));
     return hash;
 }
-const gencShake = (suffix, blockLen, outputLen) => createXOFer((opts = {}) => cshakePers(new Keccak(blockLen, suffix, chooseLen(opts, outputLen), true), opts));
-export const cshake128 = /* @__PURE__ */ (() => gencShake(0x1f, 168, 128 / 8))();
-export const cshake256 = /* @__PURE__ */ (() => gencShake(0x1f, 136, 256 / 8))();
-export class KMAC extends Keccak {
+const gencShake = (suffix, blockLen, outputLen) => (0, utils_ts_1.createXOFer)((opts = {}) => cshakePers(new sha3_ts_1.Keccak(blockLen, suffix, chooseLen(opts, outputLen), true), opts));
+exports.cshake128 = (() => gencShake(0x1f, 168, 128 / 8))();
+exports.cshake256 = (() => gencShake(0x1f, 136, 256 / 8))();
+class KMAC extends sha3_ts_1.Keccak {
     constructor(blockLen, outputLen, enableXOF, key, opts = {}) {
         super(blockLen, 0x1f, outputLen, enableXOF);
         cshakePers(this, { NISTfn: 'KMAC', personalization: opts.personalization });
-        key = toBytes(key);
-        abytes(key);
+        key = (0, utils_ts_1.toBytes)(key);
+        (0, utils_ts_1.abytes)(key);
         // 1. newX = bytepad(encode_string(K), 168) || X || right_encode(L).
         const blockLenBytes = leftEncode(this.blockLen);
         const keyLen = leftEncode(_8n * BigInt(key.length));
@@ -92,7 +95,7 @@ export class KMAC extends Keccak {
             to = Object.create(Object.getPrototypeOf(this), {});
             to.state = this.state.slice();
             to.blockLen = this.blockLen;
-            to.state32 = u32(to.state);
+            to.state32 = (0, utils_ts_1.u32)(to.state);
         }
         return super._cloneInto(to);
     }
@@ -100,25 +103,26 @@ export class KMAC extends Keccak {
         return this._cloneInto();
     }
 }
+exports.KMAC = KMAC;
 function genKmac(blockLen, outputLen, xof = false) {
     const kmac = (key, message, opts) => kmac.create(key, opts).update(message).digest();
     kmac.create = (key, opts = {}) => new KMAC(blockLen, chooseLen(opts, outputLen), xof, key, opts);
     return kmac;
 }
-export const kmac128 = /* @__PURE__ */ (() => genKmac(168, 128 / 8))();
-export const kmac256 = /* @__PURE__ */ (() => genKmac(136, 256 / 8))();
-export const kmac128xof = /* @__PURE__ */ (() => genKmac(168, 128 / 8, true))();
-export const kmac256xof = /* @__PURE__ */ (() => genKmac(136, 256 / 8, true))();
+exports.kmac128 = (() => genKmac(168, 128 / 8))();
+exports.kmac256 = (() => genKmac(136, 256 / 8))();
+exports.kmac128xof = (() => genKmac(168, 128 / 8, true))();
+exports.kmac256xof = (() => genKmac(136, 256 / 8, true))();
 // TupleHash
 // Usage: tuple(['ab', 'cd']) != tuple(['a', 'bcd'])
-export class TupleHash extends Keccak {
+class TupleHash extends sha3_ts_1.Keccak {
     constructor(blockLen, outputLen, enableXOF, opts = {}) {
         super(blockLen, 0x1f, outputLen, enableXOF);
         cshakePers(this, { NISTfn: 'TupleHash', personalization: opts.personalization });
         // Change update after cshake processed
         this.update = (data) => {
-            data = toBytes(data);
-            abytes(data);
+            data = (0, utils_ts_1.toBytes)(data);
+            (0, utils_ts_1.abytes)(data);
             super.update(leftEncode(_8n * BigInt(data.length)));
             super.update(data);
             return this;
@@ -137,6 +141,7 @@ export class TupleHash extends Keccak {
         return this._cloneInto();
     }
 }
+exports.TupleHash = TupleHash;
 function genTuple(blockLen, outputLen, xof = false) {
     const tuple = (messages, opts) => {
         const h = tuple.create(opts);
@@ -148,14 +153,14 @@ function genTuple(blockLen, outputLen, xof = false) {
     return tuple;
 }
 /** 128-bit TupleHASH. */
-export const tuplehash128 = /* @__PURE__ */ (() => genTuple(168, 128 / 8))();
+exports.tuplehash128 = (() => genTuple(168, 128 / 8))();
 /** 256-bit TupleHASH. */
-export const tuplehash256 = /* @__PURE__ */ (() => genTuple(136, 256 / 8))();
+exports.tuplehash256 = (() => genTuple(136, 256 / 8))();
 /** 128-bit TupleHASH XOF. */
-export const tuplehash128xof = /* @__PURE__ */ (() => genTuple(168, 128 / 8, true))();
+exports.tuplehash128xof = (() => genTuple(168, 128 / 8, true))();
 /** 256-bit TupleHASH XOF. */
-export const tuplehash256xof = /* @__PURE__ */ (() => genTuple(136, 256 / 8, true))();
-export class ParallelHash extends Keccak {
+exports.tuplehash256xof = (() => genTuple(136, 256 / 8, true))();
+class ParallelHash extends sha3_ts_1.Keccak {
     constructor(blockLen, outputLen, leafCons, enableXOF, opts = {}) {
         super(blockLen, 0x1f, outputLen, enableXOF);
         this.chunkPos = 0; // Position of current block in chunk
@@ -164,13 +169,13 @@ export class ParallelHash extends Keccak {
         this.leafCons = leafCons;
         let { blockLen: B } = opts;
         B || (B = 8);
-        anumber(B);
+        (0, utils_ts_1.anumber)(B);
         this.chunkLen = B;
         super.update(leftEncode(B));
         // Change update after cshake processed
         this.update = (data) => {
-            data = toBytes(data);
-            abytes(data);
+            data = (0, utils_ts_1.toBytes)(data);
+            (0, utils_ts_1.abytes)(data);
             const { chunkLen, leafCons } = this;
             for (let pos = 0, len = data.length; pos < len;) {
                 if (this.chunkPos == chunkLen || !this.leafHash) {
@@ -218,30 +223,31 @@ export class ParallelHash extends Keccak {
         return this._cloneInto();
     }
 }
+exports.ParallelHash = ParallelHash;
 function genPrl(blockLen, outputLen, leaf, xof = false) {
     const parallel = (message, opts) => parallel.create(opts).update(message).digest();
     parallel.create = (opts = {}) => new ParallelHash(blockLen, chooseLen(opts, outputLen), () => leaf.create({ dkLen: 2 * outputLen }), xof, opts);
     return parallel;
 }
 /** 128-bit ParallelHash. In JS, it is not parallel. */
-export const parallelhash128 = /* @__PURE__ */ (() => genPrl(168, 128 / 8, cshake128))();
+exports.parallelhash128 = (() => genPrl(168, 128 / 8, exports.cshake128))();
 /** 256-bit ParallelHash. In JS, it is not parallel. */
-export const parallelhash256 = /* @__PURE__ */ (() => genPrl(136, 256 / 8, cshake256))();
+exports.parallelhash256 = (() => genPrl(136, 256 / 8, exports.cshake256))();
 /** 128-bit ParallelHash XOF. In JS, it is not parallel. */
-export const parallelhash128xof = /* @__PURE__ */ (() => genPrl(168, 128 / 8, cshake128, true))();
+exports.parallelhash128xof = (() => genPrl(168, 128 / 8, exports.cshake128, true))();
 /** 256-bit ParallelHash. In JS, it is not parallel. */
-export const parallelhash256xof = /* @__PURE__ */ (() => genPrl(136, 256 / 8, cshake256, true))();
-const genTurboshake = (blockLen, outputLen) => createXOFer((opts = {}) => {
+exports.parallelhash256xof = (() => genPrl(136, 256 / 8, exports.cshake256, true))();
+const genTurboshake = (blockLen, outputLen) => (0, utils_ts_1.createXOFer)((opts = {}) => {
     const D = opts.D === undefined ? 0x1f : opts.D;
     // Section 2.1 of https://datatracker.ietf.org/doc/draft-irtf-cfrg-kangarootwelve/
     if (!Number.isSafeInteger(D) || D < 0x01 || D > 0x7f)
         throw new Error('invalid domain separation byte must be 0x01..0x7f, got: ' + D);
-    return new Keccak(blockLen, D, opts.dkLen === undefined ? outputLen : opts.dkLen, true, 12);
+    return new sha3_ts_1.Keccak(blockLen, D, opts.dkLen === undefined ? outputLen : opts.dkLen, true, 12);
 });
 /** TurboSHAKE 128-bit: reduced 12-round keccak. */
-export const turboshake128 = /* @__PURE__ */ genTurboshake(168, 256 / 8);
+exports.turboshake128 = genTurboshake(168, 256 / 8);
 /** TurboSHAKE 256-bit: reduced 12-round keccak. */
-export const turboshake256 = /* @__PURE__ */ genTurboshake(136, 512 / 8);
+exports.turboshake256 = genTurboshake(136, 512 / 8);
 // Kangaroo
 // Same as NIST rightEncode, but returns [0] for zero string
 function rightEncodeK12(n) {
@@ -253,7 +259,7 @@ function rightEncodeK12(n) {
     return Uint8Array.from(res);
 }
 const EMPTY_BUFFER = /* @__PURE__ */ Uint8Array.of();
-export class KangarooTwelve extends Keccak {
+class KangarooTwelve extends sha3_ts_1.Keccak {
     constructor(blockLen, leafLen, outputLen, rounds, opts) {
         super(blockLen, 0x07, outputLen, true, rounds);
         this.chunkLen = 8192;
@@ -263,8 +269,8 @@ export class KangarooTwelve extends Keccak {
         this.personalization = abytesOrZero(opts.personalization);
     }
     update(data) {
-        data = toBytes(data);
-        abytes(data);
+        data = (0, utils_ts_1.toBytes)(data);
+        (0, utils_ts_1.abytes)(data);
         const { chunkLen, blockLen, leafLen, rounds } = this;
         for (let pos = 0, len = data.length; pos < len;) {
             if (this.chunkPos == chunkLen) {
@@ -274,7 +280,7 @@ export class KangarooTwelve extends Keccak {
                     this.suffix = 0x06; // Its safe to change suffix here since its used only in digest()
                     super.update(Uint8Array.from([3, 0, 0, 0, 0, 0, 0, 0]));
                 }
-                this.leafHash = new Keccak(blockLen, 0x0b, leafLen, false, rounds);
+                this.leafHash = new sha3_ts_1.Keccak(blockLen, 0x0b, leafLen, false, rounds);
                 this.chunksDone++;
                 this.chunkPos = 0;
             }
@@ -325,16 +331,17 @@ export class KangarooTwelve extends Keccak {
         return this._cloneInto();
     }
 }
+exports.KangarooTwelve = KangarooTwelve;
 /** KangarooTwelve: reduced 12-round keccak. */
-export const k12 = /* @__PURE__ */ (() => createOptHasher((opts = {}) => new KangarooTwelve(168, 32, chooseLen(opts, 32), 12, opts)))();
+exports.k12 = (() => (0, utils_ts_1.createOptHasher)((opts = {}) => new KangarooTwelve(168, 32, chooseLen(opts, 32), 12, opts)))();
 /** MarsupilamiFourteen: reduced 14-round keccak. */
-export const m14 = /* @__PURE__ */ (() => createOptHasher((opts = {}) => new KangarooTwelve(136, 64, chooseLen(opts, 64), 14, opts)))();
+exports.m14 = (() => (0, utils_ts_1.createOptHasher)((opts = {}) => new KangarooTwelve(136, 64, chooseLen(opts, 64), 14, opts)))();
 /**
  * More at https://github.com/XKCP/XKCP/tree/master/lib/high/Keccak/PRG.
  */
-export class KeccakPRG extends Keccak {
+class KeccakPRG extends sha3_ts_1.Keccak {
     constructor(capacity) {
-        anumber(capacity);
+        (0, utils_ts_1.anumber)(capacity);
         // Rho should be full bytes
         if (capacity < 0 || capacity > 1600 - 10 || (1600 - capacity - 2) % 8)
             throw new Error('invalid capacity');
@@ -388,6 +395,8 @@ export class KeccakPRG extends Keccak {
         return this._cloneInto();
     }
 }
+exports.KeccakPRG = KeccakPRG;
 /** KeccakPRG: Pseudo-random generator based on Keccak. https://keccak.team/files/CSF-0.1.pdf */
-export const keccakprg = (capacity = 254) => new KeccakPRG(capacity);
+const keccakprg = (capacity = 254) => new KeccakPRG(capacity);
+exports.keccakprg = keccakprg;
 //# sourceMappingURL=sha3-addons.js.map

@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sha512_256 = exports.SHA512_256 = exports.sha512_224 = exports.SHA512_224 = exports.sha384 = exports.SHA384 = exports.sha512 = exports.SHA512 = void 0;
 /**
  * SHA2-512 a.k.a. sha512 and sha384. It is slower than sha256 in js because u64 operations are slow.
  *
@@ -6,21 +9,21 @@
  * @module
  * @deprecated
  */
-import { SHA384 as SHA384n, sha384 as sha384n, sha512_224 as sha512_224n, SHA512_224 as SHA512_224n, sha512_256 as sha512_256n, SHA512_256 as SHA512_256n, SHA512 as SHA512n, sha512 as sha512n, } from "./sha2.js";
+const sha2_ts_1 = require("./sha2.js");
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const SHA512 = SHA512n;
+exports.SHA512 = sha2_ts_1.SHA512;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const sha512 = sha512n;
+exports.sha512 = sha2_ts_1.sha512;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const SHA384 = SHA384n;
+exports.SHA384 = sha2_ts_1.SHA384;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const sha384 = sha384n;
+exports.sha384 = sha2_ts_1.sha384;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const SHA512_224 = SHA512_224n;
+exports.SHA512_224 = sha2_ts_1.SHA512_224;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const sha512_224 = sha512_224n;
+exports.sha512_224 = sha2_ts_1.sha512_224;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const SHA512_256 = SHA512_256n;
+exports.SHA512_256 = sha2_ts_1.SHA512_256;
 /** @deprecated Use import from `noble/hashes/sha2` module */
-export const sha512_256 = sha512_256n;
+exports.sha512_256 = sha2_ts_1.sha512_256;
 //# sourceMappingURL=sha512.js.map

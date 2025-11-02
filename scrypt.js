@@ -1,11 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.scrypt = scrypt;
+exports.scryptAsync = scryptAsync;
 /**
  * RFC 7914 Scrypt KDF. Can be used to create a key from password and salt.
  * @module
  */
-import { pbkdf2 } from "./pbkdf2.js";
-import { sha256 } from "./sha2.js";
+const pbkdf2_ts_1 = require("./pbkdf2.js");
+const sha2_ts_1 = require("./sha2.js");
 // prettier-ignore
-import { anumber, asyncLoop, checkOpts, clean, rotl, swap32IfBE, u32 } from "./utils.js";
+const utils_ts_1 = require("./utils.js");
 // The main Scrypt loop: uses Salsa extensively.
 // Six versions of the function were tried, this is the fastest one.
 // prettier-ignore
@@ -24,38 +28,38 @@ function XorAndSalsa(prev, pi, input, ii, out, oi) {
     let x00 = y00, x01 = y01, x02 = y02, x03 = y03, x04 = y04, x05 = y05, x06 = y06, x07 = y07, x08 = y08, x09 = y09, x10 = y10, x11 = y11, x12 = y12, x13 = y13, x14 = y14, x15 = y15;
     // Main loop (salsa)
     for (let i = 0; i < 8; i += 2) {
-        x04 ^= rotl(x00 + x12 | 0, 7);
-        x08 ^= rotl(x04 + x00 | 0, 9);
-        x12 ^= rotl(x08 + x04 | 0, 13);
-        x00 ^= rotl(x12 + x08 | 0, 18);
-        x09 ^= rotl(x05 + x01 | 0, 7);
-        x13 ^= rotl(x09 + x05 | 0, 9);
-        x01 ^= rotl(x13 + x09 | 0, 13);
-        x05 ^= rotl(x01 + x13 | 0, 18);
-        x14 ^= rotl(x10 + x06 | 0, 7);
-        x02 ^= rotl(x14 + x10 | 0, 9);
-        x06 ^= rotl(x02 + x14 | 0, 13);
-        x10 ^= rotl(x06 + x02 | 0, 18);
-        x03 ^= rotl(x15 + x11 | 0, 7);
-        x07 ^= rotl(x03 + x15 | 0, 9);
-        x11 ^= rotl(x07 + x03 | 0, 13);
-        x15 ^= rotl(x11 + x07 | 0, 18);
-        x01 ^= rotl(x00 + x03 | 0, 7);
-        x02 ^= rotl(x01 + x00 | 0, 9);
-        x03 ^= rotl(x02 + x01 | 0, 13);
-        x00 ^= rotl(x03 + x02 | 0, 18);
-        x06 ^= rotl(x05 + x04 | 0, 7);
-        x07 ^= rotl(x06 + x05 | 0, 9);
-        x04 ^= rotl(x07 + x06 | 0, 13);
-        x05 ^= rotl(x04 + x07 | 0, 18);
-        x11 ^= rotl(x10 + x09 | 0, 7);
-        x08 ^= rotl(x11 + x10 | 0, 9);
-        x09 ^= rotl(x08 + x11 | 0, 13);
-        x10 ^= rotl(x09 + x08 | 0, 18);
-        x12 ^= rotl(x15 + x14 | 0, 7);
-        x13 ^= rotl(x12 + x15 | 0, 9);
-        x14 ^= rotl(x13 + x12 | 0, 13);
-        x15 ^= rotl(x14 + x13 | 0, 18);
+        x04 ^= (0, utils_ts_1.rotl)(x00 + x12 | 0, 7);
+        x08 ^= (0, utils_ts_1.rotl)(x04 + x00 | 0, 9);
+        x12 ^= (0, utils_ts_1.rotl)(x08 + x04 | 0, 13);
+        x00 ^= (0, utils_ts_1.rotl)(x12 + x08 | 0, 18);
+        x09 ^= (0, utils_ts_1.rotl)(x05 + x01 | 0, 7);
+        x13 ^= (0, utils_ts_1.rotl)(x09 + x05 | 0, 9);
+        x01 ^= (0, utils_ts_1.rotl)(x13 + x09 | 0, 13);
+        x05 ^= (0, utils_ts_1.rotl)(x01 + x13 | 0, 18);
+        x14 ^= (0, utils_ts_1.rotl)(x10 + x06 | 0, 7);
+        x02 ^= (0, utils_ts_1.rotl)(x14 + x10 | 0, 9);
+        x06 ^= (0, utils_ts_1.rotl)(x02 + x14 | 0, 13);
+        x10 ^= (0, utils_ts_1.rotl)(x06 + x02 | 0, 18);
+        x03 ^= (0, utils_ts_1.rotl)(x15 + x11 | 0, 7);
+        x07 ^= (0, utils_ts_1.rotl)(x03 + x15 | 0, 9);
+        x11 ^= (0, utils_ts_1.rotl)(x07 + x03 | 0, 13);
+        x15 ^= (0, utils_ts_1.rotl)(x11 + x07 | 0, 18);
+        x01 ^= (0, utils_ts_1.rotl)(x00 + x03 | 0, 7);
+        x02 ^= (0, utils_ts_1.rotl)(x01 + x00 | 0, 9);
+        x03 ^= (0, utils_ts_1.rotl)(x02 + x01 | 0, 13);
+        x00 ^= (0, utils_ts_1.rotl)(x03 + x02 | 0, 18);
+        x06 ^= (0, utils_ts_1.rotl)(x05 + x04 | 0, 7);
+        x07 ^= (0, utils_ts_1.rotl)(x06 + x05 | 0, 9);
+        x04 ^= (0, utils_ts_1.rotl)(x07 + x06 | 0, 13);
+        x05 ^= (0, utils_ts_1.rotl)(x04 + x07 | 0, 18);
+        x11 ^= (0, utils_ts_1.rotl)(x10 + x09 | 0, 7);
+        x08 ^= (0, utils_ts_1.rotl)(x11 + x10 | 0, 9);
+        x09 ^= (0, utils_ts_1.rotl)(x08 + x11 | 0, 13);
+        x10 ^= (0, utils_ts_1.rotl)(x09 + x08 | 0, 18);
+        x12 ^= (0, utils_ts_1.rotl)(x15 + x14 | 0, 7);
+        x13 ^= (0, utils_ts_1.rotl)(x12 + x15 | 0, 9);
+        x14 ^= (0, utils_ts_1.rotl)(x13 + x12 | 0, 13);
+        x15 ^= (0, utils_ts_1.rotl)(x14 + x13 | 0, 18);
     }
     // Write output (salsa)
     out[oi++] = (y00 + x00) | 0;
@@ -92,18 +96,18 @@ function BlockMix(input, ii, out, oi, r) {
 // Common prologue and epilogue for sync/async functions
 function scryptInit(password, salt, _opts) {
     // Maxmem - 1GB+1KB by default
-    const opts = checkOpts({
+    const opts = (0, utils_ts_1.checkOpts)({
         dkLen: 32,
         asyncTick: 10,
         maxmem: 1024 ** 3 + 1024,
     }, _opts);
     const { N, r, p, dkLen, asyncTick, maxmem, onProgress } = opts;
-    anumber(N);
-    anumber(r);
-    anumber(p);
-    anumber(dkLen);
-    anumber(asyncTick);
-    anumber(maxmem);
+    (0, utils_ts_1.anumber)(N);
+    (0, utils_ts_1.anumber)(r);
+    (0, utils_ts_1.anumber)(p);
+    (0, utils_ts_1.anumber)(dkLen);
+    (0, utils_ts_1.anumber)(asyncTick);
+    (0, utils_ts_1.anumber)(maxmem);
     if (onProgress !== undefined && typeof onProgress !== 'function')
         throw new Error('progressCb should be function');
     const blockSize = 128 * r;
@@ -128,11 +132,11 @@ function scryptInit(password, salt, _opts) {
     }
     // [B0...Bp−1] ← PBKDF2HMAC-SHA256(Passphrase, Salt, 1, blockSize*ParallelizationFactor)
     // Since it has only one iteration there is no reason to use async variant
-    const B = pbkdf2(sha256, password, salt, { c: 1, dkLen: blockSize * p });
-    const B32 = u32(B);
+    const B = (0, pbkdf2_ts_1.pbkdf2)(sha2_ts_1.sha256, password, salt, { c: 1, dkLen: blockSize * p });
+    const B32 = (0, utils_ts_1.u32)(B);
     // Re-used between parallel iterations. Array(iterations) of B
-    const V = u32(new Uint8Array(blockSize * N));
-    const tmp = u32(new Uint8Array(blockSize));
+    const V = (0, utils_ts_1.u32)(new Uint8Array(blockSize * N));
+    const tmp = (0, utils_ts_1.u32)(new Uint8Array(blockSize));
     let blockMixCb = () => { };
     if (onProgress) {
         const totalBlockMix = 2 * N * p;
@@ -149,8 +153,8 @@ function scryptInit(password, salt, _opts) {
     return { N, r, p, dkLen, blockSize32, V, B32, B, tmp, blockMixCb, asyncTick };
 }
 function scryptOutput(password, dkLen, B, V, tmp) {
-    const res = pbkdf2(sha256, password, B, { c: 1, dkLen });
-    clean(B, V, tmp);
+    const res = (0, pbkdf2_ts_1.pbkdf2)(sha2_ts_1.sha256, password, B, { c: 1, dkLen });
+    (0, utils_ts_1.clean)(B, V, tmp);
     return res;
 }
 /**
@@ -169,9 +173,9 @@ function scryptOutput(password, dkLen, B, V, tmp) {
  * @example
  * scrypt('password', 'salt', { N: 2**18, r: 8, p: 1, dkLen: 32 });
  */
-export function scrypt(password, salt, opts) {
+function scrypt(password, salt, opts) {
     const { N, r, p, dkLen, blockSize32, V, B32, B, tmp, blockMixCb } = scryptInit(password, salt, opts);
-    swap32IfBE(B32);
+    (0, utils_ts_1.swap32IfBE)(B32);
     for (let pi = 0; pi < p; pi++) {
         const Pi = blockSize32 * pi;
         for (let i = 0; i < blockSize32; i++)
@@ -191,7 +195,7 @@ export function scrypt(password, salt, opts) {
             blockMixCb();
         }
     }
-    swap32IfBE(B32);
+    (0, utils_ts_1.swap32IfBE)(B32);
     return scryptOutput(password, dkLen, B, V, tmp);
 }
 /**
@@ -199,21 +203,21 @@ export function scrypt(password, salt, opts) {
  * @example
  * await scryptAsync('password', 'salt', { N: 2**18, r: 8, p: 1, dkLen: 32 });
  */
-export async function scryptAsync(password, salt, opts) {
+async function scryptAsync(password, salt, opts) {
     const { N, r, p, dkLen, blockSize32, V, B32, B, tmp, blockMixCb, asyncTick } = scryptInit(password, salt, opts);
-    swap32IfBE(B32);
+    (0, utils_ts_1.swap32IfBE)(B32);
     for (let pi = 0; pi < p; pi++) {
         const Pi = blockSize32 * pi;
         for (let i = 0; i < blockSize32; i++)
             V[i] = B32[Pi + i]; // V[0] = B[i]
         let pos = 0;
-        await asyncLoop(N - 1, asyncTick, () => {
+        await (0, utils_ts_1.asyncLoop)(N - 1, asyncTick, () => {
             BlockMix(V, pos, V, (pos += blockSize32), r); // V[i] = BlockMix(V[i-1]);
             blockMixCb();
         });
         BlockMix(V, (N - 1) * blockSize32, B32, Pi, r); // Process last element
         blockMixCb();
-        await asyncLoop(N, asyncTick, () => {
+        await (0, utils_ts_1.asyncLoop)(N, asyncTick, () => {
             // First u32 of the last 64-byte block (u32 is LE)
             const j = B32[Pi + blockSize32 - 16] % N; // j = Integrify(X) % iterations
             for (let k = 0; k < blockSize32; k++)
@@ -222,7 +226,7 @@ export async function scryptAsync(password, salt, opts) {
             blockMixCb();
         });
     }
-    swap32IfBE(B32);
+    (0, utils_ts_1.swap32IfBE)(B32);
     return scryptOutput(password, dkLen, B, V, tmp);
 }
 //# sourceMappingURL=scrypt.js.map
