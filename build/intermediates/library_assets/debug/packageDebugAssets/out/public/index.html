@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GhostShare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div id="bg-particles"></div>
+
+    <!-- Authentication System -->
+    <div id="auth-container">
+        <div class="logo-container">
+            <div class="logo">GhostShare</div>
+            <div class="tagline">Secure messaging with military-grade encryption and complete anonymity</div>
+            <div class="security-status">
+                <div class="security-indicator"></div>
+                <span>End-to-End Encrypted</span>
+            </div>
+        </div>
+        
+        <div class="auth-card glass-intense">
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchAuthTab('login')">Login</div>
+                <div class="auth-tab" onclick="switchAuthTab('register')">Register</div>
+            </div>
+            
+            <div id="login-form">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="login-username" placeholder="Enter your username" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="login-password" placeholder="Enter your password" minlength="8">
+                </div>
+                <button class="btn" onclick="login()">
+                    <span>Access Secure Network</span>
+                </button>
+            </div>
+            
+            <div id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Choose Username</label>
+                    <input type="text" class="form-input" id="reg-username" placeholder="Create unique username" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Secure Password</label>
+                    <input type="password" class="form-input" id="reg-password" placeholder="Minimum 8 characters" minlength="8">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" class="form-input" id="reg-confirm-password" placeholder="Re-enter password" minlength="8">
+                </div>
+                <button class="btn" onclick="register()">
+                    <span>Create Secure Account</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-container">
+        <!-- Sidebar Navigation -->
+        <div id="sidebar" class="glass">
+            <div class="user-avatar" onclick="showUserProfile()" id="user-avatar">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            
+            <div class="nav-item active" onclick="switchView('chats')" title="Chats">
+                <i class="fas fa-comments"></i>
+            </div>
+            
+            <div class="nav-item" onclick="switchView('friends')" title="Friends">
+                <i class="fas fa-users"></i>
+            </div>
+            
+            <div class="nav-item" onclick="switchView('groups')" title="Groups">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            
+            <div class="nav-item" onclick="showSettings()" title="Settings">
+                <i class="fas fa-cog"></i>
+            </div>
+
+            <!-- Notifications Button -->
+            <div class="nav-item" onclick="showNotifications()" title="Notifications" id="notifications-btn">
+                <i class="fas fa-bell"></i>
+                <span id="notification-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: var(--error); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; display: flex; align-items: center; justify-content: center;">0</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content">
+            <!-- Top Bar -->
+            <div id="top-bar" class="glass">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search encrypted messages...">
+                </div>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="showAddFriendModal()" title="Add Friend">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="action-btn" onclick="showCreateGroupModal()" title="Create Group">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="action-btn" title="Security Status" onclick="showSecurityInfo()">
+                        <i class="fas fa-shield-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div id="chat-area">
+                <div class="chat-welcome" id="chat-welcome">
+                    <div class="welcome-icon">
+                        <i class="fas fa-user-secret"></i>
+                    </div>
+                    <h2>Welcome to GhostShare</h2>
+                    <p>Your conversations are encrypted end-to-end. Not even we can read them.</p>
+                    <div class="security-status">
+                        <div class="security-indicator"></div>
+                        <span>All messages are encrypted</span>
+                    </div>
+                    <div class="encryption-status">
+                        <i class="fas fa-lock"></i>
+                        <span>End-to-End Encryption: Active</span>
+                    </div>
+                    <div class="loading-dots" style="margin-top: 15px;">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+
+                <!-- Chats View -->
+                <div id="chats-view" style="display: none;">
+                    <h3 style="margin-bottom: 15px; padding: 0 15px; font-size: 1.1rem;">Your Chats</h3>
+                    <div class="chats-list" id="chats-list">
+                        <!-- Chat buttons will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Friends View -->
+                <div id="friends-view" style="display: none;" class="friends-list">
+                    <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Your Friends</h3>
+                    <div id="friends-list"></div>
+                </div>
+
+                <!-- Groups View -->
+                <div id="groups-view" style="display: none;" class="groups-list">
+                    <h3 style="margin-bottom: 15px; font-size: 1.1rem;">Your Groups</h3>
+                    <div id="groups-list"></div>
+                </div>
+
+                <!-- Active Chat View -->
+                <div id="active-chat" style="display: none;">
+                    <div id="chat-header" style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div id="active-chat-avatar" style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-size: 0.8rem;"></div>
+                            <div>
+                                <div id="active-chat-name" style="font-weight: bold; font-size: 0.95rem;"></div>
+                                <div id="active-chat-status" style="font-size: 0.75rem; color: var(--text-secondary);"></div>
+                            </div>
+                        </div>
+                        <div class="encryption-badge">
+                            <i class="fas fa-lock"></i> E2E Encrypted
+                        </div>
+                    </div>
+                    <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto;">
+                        <!-- Messages will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Message Input - OPTIMIZED FOR MOBILE -->
+            <div id="message-input" class="glass" style="display: none;">
+                <div style="position: relative;">
+                    <button class="clip-btn" onclick="toggleFileOptions()">
+                        📎
+                    </button>
+                    <div class="file-options" id="file-options">
+                        <button class="file-option" onclick="selectFile('image')">
+                            <i class="fas fa-image"></i> Photo
+                        </button>
+                        <button class="file-option" onclick="selectFile('video')">
+                            <i class="fas fa-video"></i> Video
+                        </button>
+                        <button class="file-option" onclick="selectFile('file')">
+                            <i class="fas fa-file"></i> File
+                        </button>
+                    </div>
+                </div>
+                
+                <input type="text" class="message-input-field" id="message-text" placeholder="Type encrypted message..." maxlength="1000">
+                
+                <input type="file" id="file-input" class="hidden-file-input" accept="*/*">
+                <input type="file" id="image-input" class="hidden-file-input" accept="image/*">
+                <input type="file" id="video-input" class="hidden-file-input" accept="video/*">
+                
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals - COMPACT VERSIONS -->
+    <!-- Add Friend Modal -->
+    <div id="add-friend-modal" class="modal">
+        <div class="modal-content glass-intense">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem;">Add Friend</h3>
+                <button class="close-modal" onclick="closeModal('add-friend-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Friend's Username</label>
+                    <input type="text" class="form-input" id="friend-username" placeholder="Enter username" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Optional Message</label>
+                    <textarea class="form-input" id="friend-message" placeholder="Add a personal message (optional)" maxlength="200" style="min-height: 80px; resize: vertical;"></textarea>
+                </div>
+                <button class="btn" onclick="sendFriendRequest()">Send Friend Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="create-group-modal" class="modal">
+        <div class="modal-content glass-intense">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem;">Create Group</h3>
+                <button class="close-modal" onclick="closeModal('create-group-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Group Name</label>
+                    <input type="text" class="form-input" id="group-name" placeholder="Enter group name" maxlength="30">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Group Description</label>
+                    <textarea class="form-input" id="group-description" placeholder="Describe your group (optional)" maxlength="200" style="min-height: 80px; resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Add Friends to Group</label>
+                    <div id="friends-checkboxes" class="group-members-list"></div>
+                </div>
+                <button class="btn" onclick="createGroup()">Create Group</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Info Modal -->
+    <div id="group-info-modal" class="modal">
+        <div class="modal-content glass-intense">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem;" id="group-info-title">Group Info</h3>
+                <button class="close-modal" onclick="closeModal('group-info-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="group-info-content">
+                    <!-- Group info will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Settings Modal -->
+    <div id="profile-modal" class="modal">
+        <div class="modal-content glass-intense">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem;">Profile Settings</h3>
+                <button class="close-modal" onclick="closeModal('profile-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-picture-upload">
+                    <div class="profile-preview" id="profile-preview">
+                        <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--text-secondary);"></i>
+                    </div>
+                    <input type="file" id="profile-picture" class="file-input" accept="image/*, .gif">
+                    <label for="profile-picture" class="file-input-label">Change Profile Picture</label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" class="form-input" id="profile-username" value="" readonly style="flex: 1;">
+                        <button class="btn-secondary" onclick="enableUsernameEdit()" style="width: auto; padding: 8px 12px; font-size: 0.8rem;">Edit</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Current Password</label>
+                    <input type="password" class="form-input" id="current-password" placeholder="Enter current password">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-input" id="new-password" placeholder="Enter new password" minlength="8">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-input" id="confirm-new-password" placeholder="Confirm new password" minlength="8">
+                </div>
+                
+                <button class="btn" onclick="updateProfile()">Update Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Chat Modal -->
+    <div id="new-chat-modal" class="modal">
+        <div class="modal-content glass-intense">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem;">New Chat</h3>
+                <button class="close-modal" onclick="closeModal('new-chat-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Who would you like to chat with?</label>
+                    <input type="text" class="form-input" id="chat-username" placeholder="Enter username" maxlength="20">
+                </div>
+                <button class="btn" onclick="startNewChat()">Start Chat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notifications-modal" class="modal">
+        <div class="modal-content glass-intense">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem;">Notifications</h3>
+                <button class="close-modal" onclick="closeModal('notifications-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="notifications-list">
+                    <!-- Notifications will be added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Info Modal -->
+    <div id="security-modal" class="modal">
+        <div class="modal-content glass-intense">
+            <div class="modal-header">
+                <h3 style="font-size: 1.1rem;">Security Information</h3>
+                <button class="close-modal" onclick="closeModal('security-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="security-status" style="margin-bottom: 15px;">
+                    <div class="security-indicator"></div>
+                    <span style="font-weight: bold;">All Systems Secure</span>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <h4 style="color: var(--accent-primary); margin-bottom: 8px; font-size: 0.95rem;">Encryption Status</h4>
+                    <p style="font-size: 0.85rem;">✓ End-to-End Encryption: Active</p>
+                    <p style="font-size: 0.85rem;">✓ Message Encryption: AES-256-GCM</p>
+                    <p style="font-size: 0.85rem;">✓ Key Exchange: Secure Handshake</p>
+                    <p style="font-size: 0.85rem;">✓ Forward Secrecy: Enabled</p>
+                </div>
+                
+                <div style="margin-bottom: 12px;">
+                    <h4 style="color: var(--accent-primary); margin-bottom: 8px; font-size: 0.95rem;">Security Features</h4>
+                    <p style="font-size: 0.85rem;">✓ No message storage on servers</p>
+                    <p style="font-size: 0.85rem;">✓ Automatic session expiration</p>
+                    <p style="font-size: 0.85rem;">✓ Brute force protection</p>
+                    <p style="font-size: 0.85rem;">✓ Input sanitization</p>
+                    <p style="font-size: 0.85rem;">✓ Rate limiting</p>
+                    <p style="font-size: 0.85rem;">✓ DDOS protection</p>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--accent-primary); margin-bottom: 8px; font-size: 0.95rem;">Privacy</h4>
+                    <p style="font-size: 0.85rem;">✓ No data sharing with third parties</p>
+                    <p style="font-size: 0.85rem;">✓ Anonymous usage</p>
+                    <p style="font-size: 0.85rem;">✓ No message logging</p>
+                    <p style="font-size: 0.85rem;">✓ Server cannot read messages</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu">
+        <button onclick="pinChat()">Pin Chat</button>
+        <button onclick="unpinChat()">Unpin Chat</button>
+        <button onclick="blockUser()">Block User</button>
+        <button onclick="unblockUser()">Unblock User</button>
+    </div>
+
+    <!-- Notification System -->
+    <div id="notification" class="notification">
+        <div id="notification-message"></div>
+    </div>
+
+    <!-- Floating Action Button - OPTIMIZED -->
+    <button class="fab" onclick="createNewChat()" title="New Chat">
+        <i class="fas fa-edit"></i>
+    </button>
+
+    <script src="app.js"></script>
+</body>
+</html>
