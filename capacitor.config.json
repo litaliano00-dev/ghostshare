@@ -1,5 +1,5 @@
 {
   "appId": "com.opfts.ghostshare",
   "appName": "GhostShare",
-  "webDir": "public"
+  "webDir": "backend/public"
 }

@@ -2,13 +2,13 @@
   "name": "ghostshare-backend",
   "version": "1.1.0",
   "description": "Enhanced backend for GhostShare secure messaging app with E2E encryption, groups, and friend management",
-  "main": "server.js",
+  "main": "backend/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
     "test": "echo \"No tests specified\" && exit 0",
-    "backup": "node -e \"require('./server.js').createBackup()\"",
-    "stats": "node -e \"console.log(require('./server.js').getStats())\""
+    "backup": "node -e \"require('./backend/server.js').createBackup()\"",
+    "stats": "node -e \"console.log(require('./backend/server.js').getStats())\""
   },
   "keywords": [
     "messaging",
