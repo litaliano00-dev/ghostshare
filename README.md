@@ -1,38 +1,43 @@
-# GhostShare Backend & Tooling
+# GhostShare
 
-A reorganized workspace for the GhostShare secure messaging platform. The repository now separates runtime code from platform tooling, making it easier to navigate, test, and deploy the different pieces of the stack.
+GhostShare is a **free, open-source, secure messaging app** designed to protect your privacy. It was created in response to proposals like the EU Chat Control and other forms of spyware. Our mission is to provide a communication platform that keeps your data private.
 
-## Key Areas
+---
 
-- `backend/` — Express + Socket.IO API server, static assets, and persistent storage directories.
-- `src/` — TypeScript sources for cryptographic primitives and shared utilities.
-- `dist/` — Generated JS bundles derived from the TypeScript sources.
-- `mobile/` — Platform-specific projects.
-	- `mobile/android-sdk/` — Capacitor Android source tree.
-	- `mobile/ios-sdk/` — Capacitor iOS project scaffolding.
-	- `mobile/android-build/` — Consolidated Android build outputs (`artifacts/`).
-- `vendor/` — Third-party libraries.
-	- `vendor/node/` — Scoped and unscoped npm packages bundled with the repo.
-	- `vendor/noble-hashes/` — Distribution files for the bundled `@noble/hashes` modules.
+## Features
 
-## Working With The Repo
+- End-to-end encrypted messaging  
+- Multi-platform support: Linux, macOS, Windows, Android  
+- No tracking, no ads, no telemetry  
+- Fully open-source and auditable  
 
-```bash
-# install dependencies
-yarn install
+---
 
-# run the backend API (serves static content from backend/public)
-yarn start
+## Platforms
 
-# iterate on the API with auto-reload
-yarn dev
+GhostShare is available on:
 
-# build Android (from mobile/android-sdk)
-(cd mobile/android-sdk && ./gradlew assembleDebug)
-```
+- **Linux**  
+- **macOS**  
+- **Windows**  
+- **Android**  
 
-## Next Steps
+Users can download the app from [F-Droid](https://f-droid.org) or our official website.
 
-- Trim or regenerate the contents of `vendor/` if you decide to rely on `npm install` instead of committed packages.
-- Add tests for the reorganized backend, especially around the persistence layer in `backend/server.js`.
-- Update Capacitor and mobile platform configs if additional restructure is required.
+---
+
+## Contributing
+
+GhostShare is open-source and welcomes contributions. Please fork the repository, make your changes, and submit a pull request.
+
+---
+
+## License
+
+GhostShare is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Disclaimer
+
+While GhostShare prioritizes security and privacy, no software can guarantee absolute protection. Use responsibly.
